@@ -29,10 +29,8 @@
                 <h1>ไอทีท่องเที่ยว</h1>
             </div>
             <ul class="nav-links">
-                <li class="active"><a href="#"><span class="material-symbols-rounded">dashboard</span> แดชบอร์ด</a></li>
-                <li><a href="#"><span class="material-symbols-rounded">event</span> การจองของฉัน</a></li>
-                <li><a href="#"><span class="material-symbols-rounded">calendar_month</span> ปฏิทิน</a></li>
-                <li><a href="#"><span class="material-symbols-rounded">settings</span> ตั้งค่า</a></li>
+                <li class="active" id="nav-book"><a href="#"><span class="material-symbols-rounded">dashboard</span> จองห้องประชุม</a></li>
+                <li id="nav-schedule"><a href="#"><span class="material-symbols-rounded">event_note</span> ตารางการจอง</a></li>
             </ul>
             <div class="user-profile">
                 <img src="https://i.pravatar.cc/150?img=11" alt="User Profile" class="avatar">
@@ -49,7 +47,7 @@
             <header class="top-header">
                 <div class="search-bar">
                     <span class="material-symbols-rounded">search</span>
-                    <input type="text" placeholder="ค้นหาห้องประชุม, อุปกรณ์...">
+                    <input type="text" placeholder="ค้นหาการจอง...">
                 </div>
                 <div class="header-actions">
                     <button class="icon-btn theme-toggle" id="theme-toggle" aria-label="Toggle Theme">
@@ -62,53 +60,51 @@
                 </div>
             </header>
 
-            <section class="hero-section">
-                <div class="hero-text">
-                    <h2>ค้นหาห้องประชุม กรมการท่องเที่ยว</h2>
-                    <p>จองห้องประชุมง่ายๆ พร้อมอุปกรณ์ครบครัน รองรับทุกรูปแบบการทำงาน</p>
-                    
-                    <div class="status-overview" id="status-overview" style="margin-top: 1.5rem; display: flex; gap: 1rem;">
-                        <!-- Injected by app.js -->
+            <!-- Booking View -->
+            <div id="view-booking">
+                <section class="hero-section">
+                    <div class="hero-text">
+                        <h2>ค้นหาห้องประชุม กรมการท่องเที่ยว</h2>
+                        <p>จองห้องประชุมง่ายๆ พร้อมอุปกรณ์ครบครัน รองรับทุกรูปแบบการทำงาน</p>
                     </div>
-                </div>
-                
-                <div class="filter-glass-panel">
-                    <div class="filter-group">
-                        <label>วันที่</label>
-                        <input type="date" id="filter-date">
-                    </div>
-                    <div class="filter-group">
-                        <label>เวลาเริ่ม</label>
-                        <input type="time" id="filter-start-time">
-                    </div>
-                    <div class="filter-group">
-                        <label>เวลาสิ้นสุด</label>
-                        <input type="time" id="filter-end-time">
-                    </div>
-                    <div class="filter-group">
-                        <label>จำนวนคน</label>
-                        <select id="filter-capacity">
-                            <option value="any">ไม่ระบุ</option>
-                            <option value="small">1-4 คน (ขนาดเล็ก)</option>
-                            <option value="medium">5-10 คน (ขนาดกลาง)</option>
-                            <option value="large">10+ คน (ขนาดใหญ่)</option>
-                        </select>
-                    </div>
-                    <button class="btn-primary search-btn">ค้นหาห้องว่าง</button>
-                </div>
-            </section>
+                </section>
 
-            <section class="rooms-section">
-                <div class="section-header">
-                    <h3>ห้องประชุมที่แนะนำ</h3>
-                    <a href="#" class="view-all">ดูทั้งหมด <span class="material-symbols-rounded">arrow_forward</span></a>
-                </div>
-                
-                <!-- Dynamic Room Grid -->
-                <div class="room-grid" id="room-grid">
-                    <!-- Cards will be injected by JavaScript -->
-                </div>
-            </section>
+                <section class="rooms-section">
+                    <div class="section-header">
+                        <h3>ห้องประชุมที่มีให้บริการ</h3>
+                    </div>
+                    
+                    <!-- Dynamic Room Grid -->
+                    <div class="room-grid" id="room-grid">
+                        <!-- Cards will be injected by JavaScript -->
+                    </div>
+                </section>
+            </div>
+
+            <!-- Schedule View -->
+            <div id="view-schedule" style="display: none;">
+                <section class="rooms-section" style="padding-top: 2rem;">
+                    <div class="section-header">
+                        <h3>ตารางการจองทั้งหมด</h3>
+                    </div>
+                    
+                    <div style="background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow-sm);">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                            <thead style="background: var(--bg-main); border-bottom: 1px solid var(--border);">
+                                <tr>
+                                    <th style="padding: 16px; font-weight: 500; color: var(--text-muted);">วันที่</th>
+                                    <th style="padding: 16px; font-weight: 500; color: var(--text-muted);">เวลา</th>
+                                    <th style="padding: 16px; font-weight: 500; color: var(--text-muted);">หัวข้อการประชุม</th>
+                                    <th style="padding: 16px; font-weight: 500; color: var(--text-muted);">จองโดยใคร</th>
+                                </tr>
+                            </thead>
+                            <tbody id="schedule-tbody">
+                                <!-- Rows injected by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
         </main>
     </div>
 
@@ -124,10 +120,14 @@
             <form id="booking-form" class="booking-form">
                 <input type="hidden" id="booking-room-id">
                 
-                <div class="form-row">
+                <div class="form-row split-2">
                     <div class="form-group">
                         <label>หัวข้อการประชุม</label>
                         <input type="text" id="booking-title" required placeholder="เช่น ประชุมวางแผนไตรมาส 3">
+                    </div>
+                    <div class="form-group">
+                        <label>จองโดยใคร (ชื่อ-นามสกุล)</label>
+                        <input type="text" id="booking-by" required placeholder="ชื่อผู้จอง">
                     </div>
                 </div>
 
@@ -155,7 +155,7 @@
 
                 <div class="form-group">
                     <label>ความต้องการเพิ่มเติม</label>
-                    <textarea id="booking-notes" rows="3" placeholder="ระบุสิ่งที่ต้องการเพิ่มเติม เช่น ของว่าง กาแฟ..."></textarea>
+                    <textarea id="booking-notes" rows="2" placeholder="ระบุสิ่งที่ต้องการเพิ่มเติม เช่น ของว่าง กาแฟ..."></textarea>
                 </div>
 
                 <div class="modal-actions">

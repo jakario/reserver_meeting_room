@@ -1,28 +1,30 @@
-// Mock Data for Meeting Rooms
-const initialMockRooms = [
-    { id: 1, name: "Meeting Room 201", floor: 2, capacity: 4, amenities: ["TV", "Whiteboard"], image: "https://images.unsplash.com/photo-1556761175-5973dc0f32f7?auto=format&fit=crop&q=80&w=800", status: "available" },
-    { id: 2, name: "Meeting Room 202", floor: 2, capacity: 8, amenities: ["Projector", "Video Conf"], image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800", status: "available" },
-    { id: 3, name: "Meeting Room 203", floor: 2, capacity: 12, amenities: ["Smart Board", "Coffee"], image: "https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&q=80&w=800", status: "available" },
-    { id: 4, name: "Meeting Room 301", floor: 3, capacity: 4, amenities: ["Monitor", "Quiet Zone"], image: "https://images.unsplash.com/photo-1598425237654-4c0529d380e2?auto=format&fit=crop&q=80&w=800", status: "available" },
-    { id: 5, name: "Meeting Room 302", floor: 3, capacity: 10, amenities: ["Projector", "Mic System"], image: "https://images.unsplash.com/photo-1604328698692-f76ea9498e76?auto=format&fit=crop&q=80&w=800", status: "available" },
-    { id: 6, name: "Meeting Room 303", floor: 3, capacity: 6, amenities: ["TV", "Whiteboard"], image: "https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&q=80&w=800", status: "available" },
-    { id: 7, name: "Meeting Room 401", floor: 4, capacity: 20, amenities: ["Projector", "Mic System", "Catering"], image: "https://images.unsplash.com/photo-1604328698692-f76ea9498e76?auto=format&fit=crop&q=80&w=800", status: "available" },
-    { id: 8, name: "Meeting Room 402", floor: 4, capacity: 8, amenities: ["Smart Board", "Video Conf"], image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800", status: "available" },
-    { id: 9, name: "Meeting Room 403", floor: 4, capacity: 5, amenities: ["TV", "Snacks"], image: "https://images.unsplash.com/photo-1556761175-5973dc0f32f7?auto=format&fit=crop&q=80&w=800", status: "available" }
+// Setup 1 Meeting Room
+const roomData = [
+    { 
+        id: 1, 
+        name: "Main Meeting Room (ห้องประชุมใหญ่)", 
+        floor: 1, 
+        capacity: 20, 
+        amenities: ["Projector", "Mic System", "Whiteboard", "Video Conf"], 
+        image: "https://images.unsplash.com/photo-1604328698692-f76ea9498e76?auto=format&fit=crop&q=80&w=800",
+        status: "available"
+    }
 ];
 
-// Load from LocalStorage or use default
-let mockRooms = [];
-const savedRooms = localStorage.getItem('meeting_rooms_data');
-if (savedRooms) {
-    mockRooms = JSON.parse(savedRooms);
-} else {
-    mockRooms = JSON.parse(JSON.stringify(initialMockRooms)); // Deep copy
-    localStorage.setItem('meeting_rooms_data', JSON.stringify(mockRooms));
+// Load bookings from LocalStorage
+let bookings = [];
+const savedBookings = localStorage.getItem('meeting_bookings_data');
+const legacyRooms = localStorage.getItem('meeting_rooms_data');
+if (legacyRooms) {
+    // legacy cleanup
+    localStorage.removeItem('meeting_rooms_data');
+}
+if (savedBookings) {
+    bookings = JSON.parse(savedBookings);
 }
 
-function saveRoomsToStorage() {
-    localStorage.setItem('meeting_rooms_data', JSON.stringify(mockRooms));
+function saveBookingsToStorage() {
+    localStorage.setItem('meeting_bookings_data', JSON.stringify(bookings));
 }
 
 // DOM Elements
@@ -33,9 +35,31 @@ const closeModalBtn = document.getElementById('close-modal');
 const cancelBookingBtn = document.getElementById('cancel-booking');
 const bookingForm = document.getElementById('booking-form');
 const modalRoomName = document.getElementById('modal-room-name');
-const bookingRoomId = document.getElementById('booking-room-id');
 const toast = document.getElementById('toast');
-const searchBtn = document.querySelector('.search-btn');
+const scheduleTbody = document.getElementById('schedule-tbody');
+
+// Views & Navigation
+const navBook = document.getElementById('nav-book');
+const navSchedule = document.getElementById('nav-schedule');
+const viewBooking = document.getElementById('view-booking');
+const viewSchedule = document.getElementById('view-schedule');
+
+navBook.addEventListener('click', (e) => {
+    e.preventDefault();
+    navBook.classList.add('active');
+    navSchedule.classList.remove('active');
+    viewBooking.style.display = 'block';
+    viewSchedule.style.display = 'none';
+});
+
+navSchedule.addEventListener('click', (e) => {
+    e.preventDefault();
+    navSchedule.classList.add('active');
+    navBook.classList.remove('active');
+    viewBooking.style.display = 'none';
+    viewSchedule.style.display = 'block';
+    renderSchedule();
+});
 
 // Theme Management
 function toggleTheme() {
@@ -49,7 +73,6 @@ function toggleTheme() {
     icon.textContent = newTheme === 'dark' ? 'light_mode' : 'dark_mode';
 }
 
-// Initialize Theme
 const savedTheme = localStorage.getItem('theme') || 'light';
 document.documentElement.setAttribute('data-theme', savedTheme);
 if (savedTheme === 'dark') {
@@ -57,92 +80,87 @@ if (savedTheme === 'dark') {
 }
 themeToggle.addEventListener('click', toggleTheme);
 
-// Render Rooms
-function renderRooms(rooms) {
+// Render Room
+function renderRooms() {
     roomGrid.innerHTML = '';
     
-    // Update status overview
-    const availableCount = mockRooms.filter(r => r.status === 'available').length;
-    const unavailableCount = mockRooms.filter(r => r.status === 'unavailable').length;
-    const overviewDiv = document.getElementById('status-overview');
-    if (overviewDiv) {
-        overviewDiv.innerHTML = `
-            <div style="background: var(--glass-bg); padding: 8px 16px; border-radius: var(--radius-full); display: flex; align-items: center; gap: 8px; border: 1px solid var(--border);">
-                <span class="material-symbols-rounded" style="color: #10B981;">fiber_manual_record</span>
-                <span>ว่าง: <strong>${availableCount}</strong></span>
-            </div>
-            <div style="background: var(--glass-bg); padding: 8px 16px; border-radius: var(--radius-full); display: flex; align-items: center; gap: 8px; border: 1px solid var(--border);">
-                <span class="material-symbols-rounded" style="color: #EF4444;">fiber_manual_record</span>
-                <span>ไม่ว่าง: <strong>${unavailableCount}</strong></span>
-            </div>
-        `;
-    }
+    const room = roomData[0];
+    const amenitiesHTML = room.amenities.map(amenity => `
+        <span class="amenity">
+            <span class="material-symbols-rounded" style="font-size: 14px;">check</span> ${amenity}
+        </span>
+    `).join('');
 
-    if(rooms.length === 0) {
-        roomGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 2rem;">ไม่พบห้องประชุมที่ตรงกับเงื่อนไข</p>';
+    const cardHTML = `
+        <div class="room-card" data-id="${room.id}">
+            <div class="room-image">
+                <img src="${room.image}" alt="${room.name}" loading="lazy">
+            </div>
+            <div class="room-content">
+                <h4 class="room-title">${room.name}</h4>
+                <div class="room-capacity">
+                    <span class="material-symbols-rounded" style="font-size: 18px;">layers</span>
+                    ชั้น ${room.floor}
+                    <span class="material-symbols-rounded" style="font-size: 18px; margin-left: 12px;">group</span>
+                    รองรับสูงสุด ${room.capacity} คน
+                </div>
+                <div class="room-amenities">
+                    ${amenitiesHTML}
+                </div>
+                <div class="room-footer" style="justify-content: flex-end;">
+                    <button class="btn-book" onclick="openBookingModal()">จองห้องนี้</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    roomGrid.insertAdjacentHTML('beforeend', cardHTML);
+}
+
+// Render Schedule Table
+function renderSchedule() {
+    scheduleTbody.innerHTML = '';
+    
+    if (bookings.length === 0) {
+        scheduleTbody.innerHTML = `
+            <tr>
+                <td colspan="4" style="text-align: center; padding: 24px; color: var(--text-muted);">ไม่มีข้อมูลการจอง</td>
+            </tr>
+        `;
         return;
     }
 
-    rooms.forEach(room => {
-        // Create amenities HTML
-        const amenitiesHTML = room.amenities.map(amenity => `
-            <span class="amenity">
-                <span class="material-symbols-rounded" style="font-size: 14px;">check</span> ${amenity}
-            </span>
-        `).join('');
+    // Sort bookings by date descending
+    const sortedBookings = [...bookings].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        const isAvailable = room.status === 'available';
-        const badgeColor = isAvailable ? '#10B981' : '#EF4444';
-        const badgeText = isAvailable ? 'ว่าง' : 'ไม่ว่าง';
-        
-        const buttonHtml = isAvailable 
-            ? `<button class="btn-book" onclick="openBookingModal(${room.id})">จองห้องนี้</button>`
-            : `<button class="btn-book" disabled style="background: var(--bg-main); color: var(--text-muted); cursor: not-allowed; border: 1px solid var(--border);">ไม่ว่าง</button>`;
+    sortedBookings.forEach(b => {
+        // Format date to Thai format
+        const dateObj = new Date(b.date);
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        const formattedDate = dateObj.toLocaleDateString('th-TH', options);
 
-        const cardHTML = `
-            <div class="room-card" data-id="${room.id}" style="${!isAvailable ? 'opacity: 0.75;' : ''}">
-                <div class="room-image">
-                    <div class="room-badge">
-                        <span class="material-symbols-rounded" style="font-size: 16px; color: ${badgeColor};">fiber_manual_record</span> ${badgeText}
-                    </div>
-                    <img src="${room.image}" alt="${room.name}" loading="lazy">
-                </div>
-                <div class="room-content">
-                    <h4 class="room-title">${room.name}</h4>
-                    <div class="room-capacity">
-                        <span class="material-symbols-rounded" style="font-size: 18px;">layers</span>
-                        ชั้น ${room.floor}
-                        <span class="material-symbols-rounded" style="font-size: 18px; margin-left: 12px;">group</span>
-                        รองรับสูงสุด ${room.capacity} คน
-                    </div>
-                    <div class="room-amenities">
-                        ${amenitiesHTML}
-                    </div>
-                    <div class="room-footer" style="justify-content: flex-end;">
-                        ${buttonHtml}
-                    </div>
-                </div>
-            </div>
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid var(--border)';
+        tr.innerHTML = `
+            <td style="padding: 16px;">${formattedDate}</td>
+            <td style="padding: 16px;">${b.startTime} - ${b.endTime}</td>
+            <td style="padding: 16px;"><strong>${b.title}</strong></td>
+            <td style="padding: 16px; color: var(--primary); font-weight: 500;">${b.bookedBy}</td>
         `;
-        
-        roomGrid.insertAdjacentHTML('beforeend', cardHTML);
+        scheduleTbody.appendChild(tr);
     });
 }
 
 // Modal Management
-window.openBookingModal = function(roomId) {
-    const room = mockRooms.find(r => r.id === roomId);
-    if (!room) return;
-    
+window.openBookingModal = function() {
+    const room = roomData[0];
     modalRoomName.textContent = `จองห้อง: ${room.name}`;
-    bookingRoomId.value = room.id;
     
-    // Set default date to today
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('booking-date').value = today;
     
     modalOverlay.classList.add('active');
-    document.body.style.overflow = 'hidden'; // Prevent scrolling
+    document.body.style.overflow = 'hidden'; 
 }
 
 function closeBookingModal() {
@@ -181,71 +199,53 @@ function showToast(message, isError = false) {
     }, 3000);
 }
 
-// Handle Form Submission (Make it real via LocalStorage)
+// Handle Form Submission
 bookingForm.addEventListener('submit', (e) => {
     e.preventDefault();
     
-    const roomId = parseInt(bookingRoomId.value);
+    const title = document.getElementById('booking-title').value;
+    const bookedBy = document.getElementById('booking-by').value;
+    const date = document.getElementById('booking-date').value;
+    const startTime = document.getElementById('booking-time-start').value;
+    const endTime = document.getElementById('booking-time-end').value;
     
     const submitBtn = bookingForm.querySelector('button[type="submit"]');
     const originalText = submitBtn.textContent;
-    submitBtn.textContent = 'กำลังดำเนินการ...';
+    submitBtn.textContent = 'กำลังบันทึก...';
     submitBtn.disabled = true;
     
     setTimeout(() => {
-        // Change room status
-        const roomIndex = mockRooms.findIndex(r => r.id === roomId);
-        if(roomIndex !== -1) {
-            mockRooms[roomIndex].status = 'unavailable';
-            saveRoomsToStorage();
-        }
+        // Save new booking
+        const newBooking = {
+            id: Date.now(),
+            title,
+            bookedBy,
+            date,
+            startTime,
+            endTime
+        };
+        
+        bookings.push(newBooking);
+        saveBookingsToStorage();
         
         closeBookingModal();
-        renderRooms(mockRooms);
-        showToast('จองห้องประชุมสำเร็จแล้ว! ข้อมูลถูกบันทึกเรียบร้อย');
+        showToast('จองห้องประชุมสำเร็จแล้ว! ข้อมูลถูกบันทึกในตารางการจอง');
         
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
     }, 600);
 });
 
-// Search functionality
-searchBtn.addEventListener('click', () => {
-    const originalText = searchBtn.textContent;
-    searchBtn.textContent = 'กำลังค้นหา...';
-    searchBtn.style.opacity = '0.7';
-    
-    // Get filter values
-    const capacityFilter = document.getElementById('filter-capacity').value;
-    
-    setTimeout(() => {
-        searchBtn.textContent = originalText;
-        searchBtn.style.opacity = '1';
-        
-        // Filter logic
-        let filteredRooms = [...mockRooms];
-        
-        if (capacityFilter !== 'any') {
-            filteredRooms = filteredRooms.filter(room => {
-                if (capacityFilter === 'small') return room.capacity >= 1 && room.capacity <= 4;
-                if (capacityFilter === 'medium') return room.capacity >= 5 && room.capacity <= 10;
-                if (capacityFilter === 'large') return room.capacity > 10;
-                return true;
-            });
-        }
-        
-        renderRooms(filteredRooms);
-        
-    }, 400);
-});
-
-// Add reset functionality in console or UI if needed
-// window.resetData = function() {
-//     localStorage.removeItem('meeting_rooms_data');
-//     location.reload();
-// }
+// Search bar visual effect (No-op in this mode)
+const searchBar = document.querySelector('.search-bar input');
+if(searchBar) {
+    searchBar.addEventListener('input', (e) => {
+        // Could implement search over schedule table here
+    });
+}
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    renderRooms(mockRooms);
+    renderRooms();
+    renderSchedule();
 });
