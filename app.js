@@ -6,7 +6,7 @@ const roomData = [
         floor: 1, 
         capacity: 20, 
         amenities: ["Projector", "Mic System", "Whiteboard", "Video Conf"], 
-        image: "https://images.unsplash.com/photo-1604328698692-f76ea9498e76?auto=format&fit=crop&q=80&w=800",
+        image: "S__237256707.jpg",
         status: "available"
     }
 ];
