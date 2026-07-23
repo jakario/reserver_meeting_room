@@ -40,6 +40,9 @@ const roomData = [
 
 // Global Bookings Array
 let bookings = [];
+let currentRoomId = null;
+let currentPage = 1;
+const rowsPerPage = 10;
 
 // DOM Elements
 const themeToggle = document.getElementById('theme-toggle');
@@ -127,6 +130,7 @@ function renderRooms() {
 // Render Schedule Table
 function renderSchedule() {
     scheduleTbody.innerHTML = '';
+    const paginationControls = document.getElementById('pagination-controls');
     
     if (bookings.length === 0) {
         scheduleTbody.innerHTML = `
@@ -134,13 +138,22 @@ function renderSchedule() {
                 <td colspan="4" style="text-align: center; padding: 24px; color: var(--text-muted);">ไม่มีข้อมูลการจอง</td>
             </tr>
         `;
+        if (paginationControls) paginationControls.innerHTML = '';
+        updateBookingStatus();
+        renderCalendar();
         return;
     }
 
     // Sort bookings by date descending
     const sortedBookings = [...bookings].sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    const totalPages = Math.ceil(sortedBookings.length / rowsPerPage);
+    if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+    
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const paginatedBookings = sortedBookings.slice(startIndex, startIndex + rowsPerPage);
 
-    sortedBookings.forEach(b => {
+    paginatedBookings.forEach(b => {
         // Format date
         const dateObj = new Date(b.date);
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -157,8 +170,40 @@ function renderSchedule() {
         scheduleTbody.appendChild(tr);
     });
 
+    if (typeof renderPagination === 'function') renderPagination(totalPages);
     updateBookingStatus();
     renderCalendar();
+}
+
+function renderPagination(totalPages) {
+    const paginationControls = document.getElementById('pagination-controls');
+    if (!paginationControls) return;
+    
+    paginationControls.innerHTML = '';
+    
+    if (totalPages <= 1) return;
+    
+    // Prev Button
+    const prevBtn = document.createElement('button');
+    prevBtn.innerHTML = '<span class="material-symbols-rounded" style="font-size: 18px;">chevron_left</span>';
+    prevBtn.style.cssText = `display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-main); color: var(--text-main); cursor: ${currentPage === 1 ? 'not-allowed' : 'pointer'}; opacity: ${currentPage === 1 ? '0.5' : '1'}; transition: background 0.2s;`;
+    prevBtn.disabled = currentPage === 1;
+    prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderSchedule(); } };
+    paginationControls.appendChild(prevBtn);
+    
+    // Page Numbers
+    const pageIndicator = document.createElement('span');
+    pageIndicator.textContent = `หน้า ${currentPage} / ${totalPages}`;
+    pageIndicator.style.cssText = `font-size: 0.9rem; color: var(--text-muted); margin: 0 8px; font-weight: 500;`;
+    paginationControls.appendChild(pageIndicator);
+    
+    // Next Button
+    const nextBtn = document.createElement('button');
+    nextBtn.innerHTML = '<span class="material-symbols-rounded" style="font-size: 18px;">chevron_right</span>';
+    nextBtn.style.cssText = `display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-main); color: var(--text-main); cursor: ${currentPage === totalPages ? 'not-allowed' : 'pointer'}; opacity: ${currentPage === totalPages ? '0.5' : '1'}; transition: background 0.2s;`;
+    nextBtn.disabled = currentPage === totalPages;
+    nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; renderSchedule(); } };
+    paginationControls.appendChild(nextBtn);
 }
 
 function updateBookingStatus() {
