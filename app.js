@@ -23,9 +23,9 @@ try {
 const roomData = [
     { 
         id: 1, 
-        name: "Main Meeting Room (ห้องประชุมใหญ่)", 
+        name: "IT Meeting Room (ห้องประชุม IT)", 
         floor: 1, 
-        capacity: 20, 
+        capacity: 10, 
         amenities: ["Projector", "Mic System", "Whiteboard", "Video Conf"], 
         image: "S__237256707.jpg",
         status: "available"
@@ -103,10 +103,8 @@ function renderRooms() {
             <div class="room-content">
                 <h4 class="room-title">${room.name}</h4>
                 <div class="room-capacity">
-                    <span class="material-symbols-rounded" style="font-size: 18px;">layers</span>
-                    ชั้น ${room.floor}
-                    <span class="material-symbols-rounded" style="font-size: 18px; margin-left: 12px;">group</span>
-                    รองรับสูงสุด ${room.capacity} คน
+                    <span class="material-symbols-rounded" style="font-size: 18px;">group</span>
+                    รองรับไม่ควรเกิน ${room.capacity} คน
                 </div>
                 <div class="room-amenities">
                     ${amenitiesHTML}
