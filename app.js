@@ -340,6 +340,18 @@ bookingForm.addEventListener('submit', (e) => {
         return;
     }
     
+    // Check for overlapping bookings
+    const isOverlap = bookings.some(b => {
+        if (b.date !== date) return false;
+        // Check if the time intervals [startTime, endTime) overlap
+        return (startTime < b.endTime) && (endTime > b.startTime);
+    });
+
+    if (isOverlap) {
+        showToast('ไม่สามารถจองได้ เนื่องจากมีการจองในวันและเวลาดังกล่าวแล้ว', true);
+        return;
+    }
+    
     const submitBtn = bookingForm.querySelector('button[type="submit"]');
     const originalText = submitBtn.textContent;
     submitBtn.textContent = 'กำลังบันทึก...';
