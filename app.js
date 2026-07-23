@@ -158,6 +158,7 @@ function renderSchedule() {
     });
 
     updateBookingStatus();
+    renderCalendar();
 }
 
 function updateBookingStatus() {
@@ -284,11 +285,11 @@ bookingForm.addEventListener('submit', (e) => {
     const startTime = document.getElementById('booking-time-start').value;
     const endTime = document.getElementById('booking-time-end').value;
     
-    // Time Validation (08:00 - 16:30)
-    if (startTime < "08:00" || endTime > "16:30" || startTime >= "16:30" || endTime <= "08:00") {
-        showToast('สามารถจองได้เฉพาะช่วงเวลา 08:00 - 16:30 เท่านั้น', true);
+    if (!startTime || !endTime) {
+        showToast('กรุณาเลือกเวลาให้ครบถ้วน', true);
         return;
     }
+    
     if (startTime >= endTime) {
         showToast('เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น', true);
         return;
@@ -341,3 +342,58 @@ document.addEventListener('DOMContentLoaded', () => {
     renderRooms();
     setupDatabaseListener(); // Start listening for realtime updates
 });
+
+// Render Calendar
+function renderCalendar() {
+    const calendarEl = document.getElementById('sidebar-calendar');
+    if (!calendarEl) return;
+    
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    
+    const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+    
+    // Get first day of month and total days
+    const firstDay = new Date(year, month, 1).getDay(); // 0 = Sunday
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    let html = `
+        <div class="calendar-header">
+            <span>${monthNames[month]} ${year + 543}</span>
+        </div>
+        <div class="calendar-grid">
+            <div class="calendar-day-name">อา</div>
+            <div class="calendar-day-name">จ</div>
+            <div class="calendar-day-name">อ</div>
+            <div class="calendar-day-name">พ</div>
+            <div class="calendar-day-name">พฤ</div>
+            <div class="calendar-day-name">ศ</div>
+            <div class="calendar-day-name">ส</div>
+    `;
+    
+    // Empty cells before first day
+    for (let i = 0; i < firstDay; i++) {
+        html += `<div class="calendar-day empty"></div>`;
+    }
+    
+    const today = now.getDate();
+    
+    // Create a set of booked dates (YYYY-MM-DD)
+    const bookedDates = new Set(bookings.map(b => b.date));
+    
+    for (let i = 1; i <= daysInMonth; i++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+        const isToday = (i === today);
+        const isBooked = bookedDates.has(dateStr);
+        
+        let classes = 'calendar-day';
+        if (isToday) classes += ' today';
+        if (isBooked) classes += ' booked';
+        
+        html += `<div class="${classes}">${i}</div>`;
+    }
+    
+    html += `</div>`;
+    calendarEl.innerHTML = html;
+}

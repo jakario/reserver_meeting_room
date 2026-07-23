@@ -775,4 +775,63 @@ h1, h2, h3, h4, h5, h6 {
     .form-row.split-2 {
         grid-template-columns: 1fr;
     }
+    
+    .sidebar-calendar {
+        display: none !important;
+    }
+}
+
+/* Mini Calendar Styles */
+.sidebar-calendar {
+    margin: auto 0 1rem;
+    background: var(--bg-surface);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    border: 1px solid var(--border);
+    font-size: 0.85rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-weight: 500;
+    color: var(--primary);
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    text-align: center;
+}
+
+.calendar-day-name {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.calendar-day {
+    padding: 6px 4px;
+    border-radius: 4px;
+    color: var(--text-main);
+}
+
+.calendar-day.empty {
+    color: transparent;
+}
+
+.calendar-day.booked {
+    background-color: #EF4444;
+    color: white;
+    font-weight: 600;
+}
+
+.calendar-day.today {
+    border: 1px solid var(--primary);
+    font-weight: bold;
 }
