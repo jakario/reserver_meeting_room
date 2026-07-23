@@ -399,6 +399,7 @@ h1, h2, h3, h4, h5, h6 {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 2rem;
+    justify-content: center;
 }
 
 @media (min-width: 768px) {
@@ -554,6 +555,7 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 1rem;
     opacity: 0;
     visibility: hidden;
     transition: var(--transition);
@@ -566,8 +568,10 @@ h1, h2, h3, h4, h5, h6 {
 
 .modal-content {
     background: var(--bg-surface);
-    width: 90%;
+    width: 100%;
     max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
     border-radius: var(--radius-lg);
     padding: 2.5rem;
     position: relative;
@@ -625,6 +629,17 @@ h1, h2, h3, h4, h5, h6 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1.2rem;
+}
+
+@media (max-width: 768px) {
+    .form-row.split-2 {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+    .modal-content {
+        padding: 1.5rem;
+        max-height: 85vh;
+    }
 }
 
 .form-group {
