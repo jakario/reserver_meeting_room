@@ -156,6 +156,49 @@ function renderSchedule() {
         `;
         scheduleTbody.appendChild(tr);
     });
+
+    updateBookingStatus();
+}
+
+function updateBookingStatus() {
+    const statusIndicator = document.getElementById('booking-status-indicator');
+    if (!statusIndicator) return;
+
+    if (bookings.length === 0) {
+        statusIndicator.innerHTML = `<span class="material-symbols-rounded" style="margin-right: 6px; font-size: 20px; color: #10B981;">check_circle</span> <span style="color: #10B981;">ว่าง (ยังไม่มีคิวการจอง)</span>`;
+        return;
+    }
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
+
+    // Filter upcoming bookings (date >= today)
+    const upcoming = bookings.filter(b => b.date >= todayStr);
+    
+    // Sort by date, then startTime
+    upcoming.sort((a, b) => {
+        if (a.date !== b.date) return a.date.localeCompare(b.date);
+        return a.startTime.localeCompare(b.startTime);
+    });
+
+    if (upcoming.length === 0) {
+        statusIndicator.innerHTML = `<span class="material-symbols-rounded" style="margin-right: 6px; font-size: 20px; color: #10B981;">check_circle</span> <span style="color: #10B981;">ว่าง (ไม่มีคิวจองเร็วๆ นี้)</span>`;
+        return;
+    }
+
+    const nextBooking = upcoming[0];
+    
+    if (nextBooking.date === todayStr) {
+        statusIndicator.innerHTML = `<span class="material-symbols-rounded" style="margin-right: 6px; font-size: 20px; color: #EF4444;">error</span> <span style="color: #EF4444;">มีการจองใช้วันนี้: ${nextBooking.startTime} - ${nextBooking.endTime}</span>`;
+    } else {
+        const dateObj = new Date(nextBooking.date);
+        const options = { month: 'long', day: 'numeric' };
+        const formattedDate = dateObj.toLocaleDateString('th-TH', options);
+        statusIndicator.innerHTML = `<span class="material-symbols-rounded" style="margin-right: 6px; font-size: 20px; color: #F59E0B;">schedule</span> <span style="color: #F59E0B;">การจองใกล้สุด: ${formattedDate} เวลา ${nextBooking.startTime}</span>`;
+    }
 }
 
 // Real-time Database Listener
