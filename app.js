@@ -1,13 +1,15 @@
 // --- Firebase Configuration ---
 // จำเป็นต้องนำค่า Config จาก Firebase (https://console.firebase.google.com/) มาใส่ตรงนี้
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyAz5Mx6GdnyxxrgT1mRvshVw3jHs8ww7yQ",
+  authDomain: "reserve-meeting-room-2a1af.firebaseapp.com",
+  // ถ้าคุณเลือก Server เป็นสิงคโปร์ URL จะเป็นตามด้านล่างนี้ แต่ถ้าเป็นสหรัฐฯ จะเป็น .firebaseio.com
+  databaseURL: "https://reserve-meeting-room-2a1af-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "reserve-meeting-room-2a1af",
+  storageBucket: "reserve-meeting-room-2a1af.firebasestorage.app",
+  messagingSenderId: "487896334123",
+  appId: "1:487896334123:web:effef836250854b9c40f6e",
+  measurementId: "G-5WR0RSLTZT"
 };
 
 // Initialize Firebase
