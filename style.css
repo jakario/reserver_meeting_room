@@ -262,7 +262,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Hero Section */
 .hero-section {
-    padding: 4rem 3rem;
+    padding: 1.5rem 3rem;
     background: linear-gradient(135deg, var(--primary-light) 0%, transparent 100%);
     position: relative;
 }
@@ -367,7 +367,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Rooms Section */
 .rooms-section {
-    padding: 2rem 3rem 4rem;
+    padding: 1rem 3rem 1rem;
 }
 
 .section-header {

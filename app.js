@@ -12,11 +12,15 @@ const firebaseConfig = {
 
 // Initialize Firebase
 let database;
-try {
-    firebase.initializeApp(firebaseConfig);
-    database = firebase.database();
-} catch (e) {
-    console.log("Firebase not configured yet. Fallback to local array.");
+if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+    try {
+        firebase.initializeApp(firebaseConfig);
+        database = firebase.database();
+    } catch (e) {
+        console.log("Firebase error:", e);
+    }
+} else {
+    console.log("Firebase not configured yet. Fallback to LocalStorage.");
 }
 
 // Setup 1 Meeting Room
