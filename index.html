@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus | ระบบจองห้องประชุมอัจฉริยะ</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="ระบบจองห้องประชุมที่ทันสมัย สะดวกและรวดเร็ว">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Material Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" />
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    
+    <div class="app-container">
+        
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo">
+                <span class="material-symbols-rounded logo-icon">meeting_room</span>
+                <h1>Nexus</h1>
+            </div>
+            <ul class="nav-links">
+                <li class="active"><a href="#"><span class="material-symbols-rounded">dashboard</span> แดชบอร์ด</a></li>
+                <li><a href="#"><span class="material-symbols-rounded">event</span> การจองของฉัน</a></li>
+                <li><a href="#"><span class="material-symbols-rounded">calendar_month</span> ปฏิทิน</a></li>
+                <li><a href="#"><span class="material-symbols-rounded">settings</span> ตั้งค่า</a></li>
+            </ul>
+            <div class="user-profile">
+                <img src="https://i.pravatar.cc/150?img=11" alt="User Profile" class="avatar">
+                <div class="user-info">
+                    <p class="name">ธนาธร สุขใจ</p>
+                    <p class="role">พนักงาน</p>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <header class="top-header">
+                <div class="search-bar">
+                    <span class="material-symbols-rounded">search</span>
+                    <input type="text" placeholder="ค้นหาห้องประชุม, อุปกรณ์...">
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn theme-toggle" id="theme-toggle" aria-label="Toggle Theme">
+                        <span class="material-symbols-rounded">dark_mode</span>
+                    </button>
+                    <button class="icon-btn notif-btn">
+                        <span class="material-symbols-rounded">notifications</span>
+                        <span class="badge">3</span>
+                    </button>
+                </div>
+            </header>
+
+            <section class="hero-section">
+                <div class="hero-text">
+                    <h2>ค้นหาพื้นที่ที่ใช่ สำหรับไอเดียใหม่ของคุณ</h2>
+                    <p>จองห้องประชุมง่ายๆ พร้อมอุปกรณ์ครบครัน รองรับทุกรูปแบบการทำงาน</p>
+                    
+                    <div class="status-overview" id="status-overview" style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                        <!-- Injected by app.js -->
+                    </div>
+                </div>
+                
+                <div class="filter-glass-panel">
+                    <div class="filter-group">
+                        <label>วันที่</label>
+                        <input type="date" id="filter-date">
+                    </div>
+                    <div class="filter-group">
+                        <label>เวลาเริ่ม</label>
+                        <input type="time" id="filter-start-time">
+                    </div>
+                    <div class="filter-group">
+                        <label>เวลาสิ้นสุด</label>
+                        <input type="time" id="filter-end-time">
+                    </div>
+                    <div class="filter-group">
+                        <label>จำนวนคน</label>
+                        <select id="filter-capacity">
+                            <option value="any">ไม่ระบุ</option>
+                            <option value="small">1-4 คน (ขนาดเล็ก)</option>
+                            <option value="medium">5-10 คน (ขนาดกลาง)</option>
+                            <option value="large">10+ คน (ขนาดใหญ่)</option>
+                        </select>
+                    </div>
+                    <button class="btn-primary search-btn">ค้นหาห้องว่าง</button>
+                </div>
+            </section>
+
+            <section class="rooms-section">
+                <div class="section-header">
+                    <h3>ห้องประชุมที่แนะนำ</h3>
+                    <a href="#" class="view-all">ดูทั้งหมด <span class="material-symbols-rounded">arrow_forward</span></a>
+                </div>
+                
+                <!-- Dynamic Room Grid -->
+                <div class="room-grid" id="room-grid">
+                    <!-- Cards will be injected by JavaScript -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Booking Modal (Hidden by default) -->
+    <div class="modal-overlay" id="booking-modal">
+        <div class="modal-content">
+            <button class="close-modal" id="close-modal"><span class="material-symbols-rounded">close</span></button>
+            <div class="modal-header">
+                <h3 id="modal-room-name">จองห้องประชุม</h3>
+                <p id="modal-room-desc">รายละเอียดการจอง</p>
+            </div>
+            
+            <form id="booking-form" class="booking-form">
+                <input type="hidden" id="booking-room-id">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>หัวข้อการประชุม</label>
+                        <input type="text" id="booking-title" required placeholder="เช่น ประชุมวางแผนไตรมาส 3">
+                    </div>
+                </div>
+
+                <div class="form-row split-2">
+                    <div class="form-group">
+                        <label>วันที่</label>
+                        <input type="date" id="booking-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>ผู้เข้าร่วม (คน)</label>
+                        <input type="number" id="booking-pax" min="1" required placeholder="จำนวนคน">
+                    </div>
+                </div>
+                
+                <div class="form-row split-2">
+                    <div class="form-group">
+                        <label>เวลาเริ่ม</label>
+                        <input type="time" id="booking-time-start" required>
+                    </div>
+                    <div class="form-group">
+                        <label>เวลาสิ้นสุด</label>
+                        <input type="time" id="booking-time-end" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>ความต้องการเพิ่มเติม</label>
+                    <textarea id="booking-notes" rows="3" placeholder="ระบุสิ่งที่ต้องการเพิ่มเติม เช่น ของว่าง กาแฟ..."></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="cancel-booking">ยกเลิก</button>
+                    <button type="submit" class="btn-primary">ยืนยันการจอง</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <span class="material-symbols-rounded" id="toast-icon">check_circle</span>
+        <span id="toast-message">ทำรายการสำเร็จ</span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
