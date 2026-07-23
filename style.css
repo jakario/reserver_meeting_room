@@ -715,15 +715,18 @@ h1, h2, h3, h4, h5, h6 {
     .app-container {
         grid-template-columns: 80px 1fr;
     }
-    .sidebar .logo h1, .nav-links li a span:not(.material-symbols-rounded), .user-info {
+    .sidebar .logo h1, .user-info {
         display: none;
     }
     .nav-links li a {
         justify-content: center;
-        padding: 12px;
+        flex-direction: column;
+        padding: 8px;
+        font-size: 0.8rem;
     }
     .nav-links li a .material-symbols-rounded {
         margin: 0;
+        margin-bottom: 4px;
     }
 }
 

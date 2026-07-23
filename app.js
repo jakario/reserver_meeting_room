@@ -32,7 +32,7 @@ const roomData = [
         name: "IT Meeting Room (ห้องประชุม IT)", 
         floor: 1, 
         capacity: 10, 
-        amenities: ["Projector", "Mic System", "Whiteboard", "Video Conf"], 
+        amenities: ["Mic System", "Whiteboard", "Video Conf"], 
         image: "S__237256707.jpg",
         status: "available"
     }
