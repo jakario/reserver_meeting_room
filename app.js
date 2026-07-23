@@ -1,3 +1,24 @@
+// --- Firebase Configuration ---
+// จำเป็นต้องนำค่า Config จาก Firebase (https://console.firebase.google.com/) มาใส่ตรงนี้
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+
+// Initialize Firebase
+let database;
+try {
+    firebase.initializeApp(firebaseConfig);
+    database = firebase.database();
+} catch (e) {
+    console.log("Firebase not configured yet. Fallback to local array.");
+}
+
 // Setup 1 Meeting Room
 const roomData = [
     { 
@@ -11,21 +32,8 @@ const roomData = [
     }
 ];
 
-// Load bookings from LocalStorage
+// Global Bookings Array
 let bookings = [];
-const savedBookings = localStorage.getItem('meeting_bookings_data');
-const legacyRooms = localStorage.getItem('meeting_rooms_data');
-if (legacyRooms) {
-    // legacy cleanup
-    localStorage.removeItem('meeting_rooms_data');
-}
-if (savedBookings) {
-    bookings = JSON.parse(savedBookings);
-}
-
-function saveBookingsToStorage() {
-    localStorage.setItem('meeting_bookings_data', JSON.stringify(bookings));
-}
 
 // DOM Elements
 const themeToggle = document.getElementById('theme-toggle');
@@ -58,17 +66,14 @@ navSchedule.addEventListener('click', (e) => {
     navBook.classList.remove('active');
     viewBooking.style.display = 'none';
     viewSchedule.style.display = 'block';
-    renderSchedule();
 });
 
 // Theme Management
 function toggleTheme() {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    
     document.documentElement.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
-    
     const icon = themeToggle.querySelector('.material-symbols-rounded');
     icon.textContent = newTheme === 'dark' ? 'light_mode' : 'dark_mode';
 }
@@ -83,7 +88,6 @@ themeToggle.addEventListener('click', toggleTheme);
 // Render Room
 function renderRooms() {
     roomGrid.innerHTML = '';
-    
     const room = roomData[0];
     const amenitiesHTML = room.amenities.map(amenity => `
         <span class="amenity">
@@ -113,7 +117,6 @@ function renderRooms() {
             </div>
         </div>
     `;
-    
     roomGrid.insertAdjacentHTML('beforeend', cardHTML);
 }
 
@@ -134,7 +137,7 @@ function renderSchedule() {
     const sortedBookings = [...bookings].sort((a, b) => new Date(b.date) - new Date(a.date));
 
     sortedBookings.forEach(b => {
-        // Format date to Thai format
+        // Format date
         const dateObj = new Date(b.date);
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
         const formattedDate = dateObj.toLocaleDateString('th-TH', options);
@@ -149,6 +152,31 @@ function renderSchedule() {
         `;
         scheduleTbody.appendChild(tr);
     });
+}
+
+// Real-time Database Listener
+function setupDatabaseListener() {
+    if (database) {
+        // Listen to "bookings" path in Firebase Realtime Database
+        database.ref('bookings').on('value', (snapshot) => {
+            const data = snapshot.val();
+            bookings = [];
+            if (data) {
+                // Convert object of objects to array
+                for (let key in data) {
+                    bookings.push(data[key]);
+                }
+            }
+            renderSchedule();
+        });
+    } else {
+        // Fallback to LocalStorage if Firebase is not configured
+        const savedBookings = localStorage.getItem('meeting_bookings_data');
+        if (savedBookings) {
+            bookings = JSON.parse(savedBookings);
+            renderSchedule();
+        }
+    }
 }
 
 // Modal Management
@@ -214,38 +242,45 @@ bookingForm.addEventListener('submit', (e) => {
     submitBtn.textContent = 'กำลังบันทึก...';
     submitBtn.disabled = true;
     
-    setTimeout(() => {
-        // Save new booking
-        const newBooking = {
-            id: Date.now(),
-            title,
-            bookedBy,
-            date,
-            startTime,
-            endTime
-        };
-        
+    const newBooking = {
+        id: Date.now(),
+        title,
+        bookedBy,
+        date,
+        startTime,
+        endTime
+    };
+
+    if (database) {
+        // Push to Firebase
+        database.ref('bookings').push(newBooking)
+            .then(() => {
+                closeBookingModal();
+                showToast('จองห้องประชุมสำเร็จแล้ว! ข้อมูลถูกบันทึกขึ้นระบบส่วนกลาง');
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            })
+            .catch((error) => {
+                console.error(error);
+                showToast('เกิดข้อผิดพลาดในการบันทึกข้อมูล', true);
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            });
+    } else {
+        // Fallback to LocalStorage
         bookings.push(newBooking);
-        saveBookingsToStorage();
+        localStorage.setItem('meeting_bookings_data', JSON.stringify(bookings));
+        renderSchedule();
         
         closeBookingModal();
-        showToast('จองห้องประชุมสำเร็จแล้ว! ข้อมูลถูกบันทึกในตารางการจอง');
-        
+        showToast('ไม่ได้เชื่อมต่อ Firebase (บันทึกลง LocalStorage แทน)');
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
-    }, 600);
+    }
 });
-
-// Search bar visual effect (No-op in this mode)
-const searchBar = document.querySelector('.search-bar input');
-if(searchBar) {
-    searchBar.addEventListener('input', (e) => {
-        // Could implement search over schedule table here
-    });
-}
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     renderRooms();
-    renderSchedule();
+    setupDatabaseListener(); // Start listening for realtime updates
 });
