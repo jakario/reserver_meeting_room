@@ -241,6 +241,16 @@ bookingForm.addEventListener('submit', (e) => {
     const startTime = document.getElementById('booking-time-start').value;
     const endTime = document.getElementById('booking-time-end').value;
     
+    // Time Validation (08:00 - 16:30)
+    if (startTime < "08:00" || endTime > "16:30" || startTime >= "16:30" || endTime <= "08:00") {
+        showToast('สามารถจองได้เฉพาะช่วงเวลา 08:00 - 16:30 เท่านั้น', true);
+        return;
+    }
+    if (startTime >= endTime) {
+        showToast('เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น', true);
+        return;
+    }
+    
     const submitBtn = bookingForm.querySelector('button[type="submit"]');
     const originalText = submitBtn.textContent;
     submitBtn.textContent = 'กำลังบันทึก...';
