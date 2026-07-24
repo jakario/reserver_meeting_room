@@ -400,14 +400,29 @@ document.addEventListener('DOMContentLoaded', () => {
     setupDatabaseListener(); // Start listening for realtime updates
 });
 
+// Calendar State
+let currentCalendarMonth = new Date().getMonth();
+let currentCalendarYear = new Date().getFullYear();
+
+window.changeCalendarMonth = function(offset) {
+    currentCalendarMonth += offset;
+    if (currentCalendarMonth < 0) {
+        currentCalendarMonth = 11;
+        currentCalendarYear--;
+    } else if (currentCalendarMonth > 11) {
+        currentCalendarMonth = 0;
+        currentCalendarYear++;
+    }
+    renderCalendar();
+};
+
 // Render Calendar
 function renderCalendar() {
     const calendarEl = document.getElementById('sidebar-calendar');
     if (!calendarEl) return;
     
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
+    const year = currentCalendarYear;
+    const month = currentCalendarMonth;
     
     const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
     
@@ -416,8 +431,10 @@ function renderCalendar() {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     
     let html = `
-        <div class="calendar-header">
-            <span>${monthNames[month]} ${year + 543}</span>
+        <div class="calendar-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <button onclick="changeCalendarMonth(-1)" style="background:none; border:none; cursor:pointer; color:var(--text-muted); display:flex; align-items:center; padding: 4px; border-radius: 4px;" onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background='none'"><span class="material-symbols-rounded" style="font-size: 20px;">chevron_left</span></button>
+            <span style="font-weight: 600;">${monthNames[month]} ${year + 543}</span>
+            <button onclick="changeCalendarMonth(1)" style="background:none; border:none; cursor:pointer; color:var(--text-muted); display:flex; align-items:center; padding: 4px; border-radius: 4px;" onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background='none'"><span class="material-symbols-rounded" style="font-size: 20px;">chevron_right</span></button>
         </div>
         <div class="calendar-grid">
             <div class="calendar-day-name">อา</div>
@@ -434,14 +451,16 @@ function renderCalendar() {
         html += `<div class="calendar-day empty"></div>`;
     }
     
-    const today = now.getDate();
+    const now = new Date();
+    const isCurrentMonthYear = (year === now.getFullYear() && month === now.getMonth());
+    const todayDate = now.getDate();
     
     // Create a set of booked dates (YYYY-MM-DD)
     const bookedDates = new Set(bookings.map(b => b.date));
     
     for (let i = 1; i <= daysInMonth; i++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-        const isToday = (i === today);
+        const isToday = (isCurrentMonthYear && i === todayDate);
         const isBooked = bookedDates.has(dateStr);
         
         let classes = 'calendar-day';
